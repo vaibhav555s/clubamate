@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { Calendar, MapPin, Users } from 'lucide-react';
 import { useToast } from './ToastContainer';
+import { useAuth } from '../contexts/AuthContext';
+import EventRegistrationModal from './EventRegistrationModal';
 
 interface Event {
   id: string;
@@ -21,9 +23,10 @@ interface EventCardProps {
 }
 
 const EventCard: React.FC<EventCardProps> = ({ event }) => {
-  const [isRegistering, setIsRegistering] = useState(false);
   const [currentRegistered, setCurrentRegistered] = useState(event.registered);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const { showToast } = useToast();
+  const { user, signInWithGoogle } = useAuth();
 
   const registrationPercentage = (currentRegistered / event.capacity) * 100;
   const isNearlyFull = registrationPercentage > 80;
@@ -44,30 +47,27 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
     }
   };
 
-  const handleRegistration = async () => {
+  const handleRegistration = () => {
     if (isFull) return;
     
-    try {
-      setIsRegistering(true);
-      
-      // Simulate registration process
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update local state
-      setCurrentRegistered(prev => prev + 1);
-      
-      // Show success toast
-      showToast('Registration successful! 🎉', 'success');
-      
-    } catch (error) {
-      showToast('Registration failed. Please try again.', 'error');
-    } finally {
-      setIsRegistering(false);
+    if (!user) {
+      // Trigger sign-in first
+      signInWithGoogle().catch(() => {
+        showToast('Please sign in to register for events', 'error');
+      });
+      return;
     }
+    
+    setShowRegistrationModal(true);
+  };
+
+  const handleRegistrationSuccess = () => {
+    setCurrentRegistered(prev => prev + 1);
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group hover:scale-105">
+    <>
+      <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group hover:scale-105">
       {/* Header Section */}
       <div className="p-6 pb-4">
         <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium mb-3 ${getCategoryColor()}`}>
@@ -120,19 +120,25 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
       <div className="px-6 pb-6">
         <button 
           onClick={handleRegistration}
-          disabled={isFull || isRegistering}
+          disabled={isFull}
           className={`w-full py-3 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg ${
             isFull 
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-              : isRegistering
-              ? 'bg-blue-400 text-white cursor-wait'
               : 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 hover:scale-105'
           }`}
         >
-          {isRegistering ? 'Registering...' : isFull ? 'Registration Full' : 'Register Now'}
+          {isFull ? 'Registration Full' : 'Register Now'}
         </button>
       </div>
     </div>
+
+      <EventRegistrationModal
+        event={event}
+        isOpen={showRegistrationModal}
+        onClose={() => setShowRegistrationModal(false)}
+        onSuccess={handleRegistrationSuccess}
+      />
+    </>
   );
 };
 
