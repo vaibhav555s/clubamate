@@ -1,17 +1,29 @@
-
 import React, { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogOut } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signInWithGoogle, logout, loading } = useAuth();
 
   const navLinks = [
     { name: 'Home', href: '#home' },
     { name: 'Events', href: '#events' },
     { name: 'Clubs', href: '#clubs' },
-    { name: 'About', href: '#about' },
     { name: 'Contact', href: '#contact' }
   ];
+
+  const handleAuthAction = async () => {
+    try {
+      if (user) {
+        await logout();
+      } else {
+        await signInWithGoogle();
+      }
+    } catch (error) {
+      console.error('Auth action failed:', error);
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/95 border-b border-gray-200/20">
@@ -22,20 +34,52 @@ const Navbar = () => {
             ClubMate
           </div>
 
-          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-4">
+            {/* Desktop Navigation */}
+              {navLinks.map((link) => (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className="text-gray-700 hover:text-blue-600 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-blue-50"
+                >
+                  {link.name}
+                </a>
+              ))} 
+
+          </div>
+            
           <div className="hidden md:flex items-center space-x-1">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-blue-50"
+            {/* Desktop Auth Section */}
+            {loading ? (
+              <div className="ml-4 w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+            ) : user ? (
+              <div className="ml-4 flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <img 
+                    src={user.photoURL} 
+                    alt={user.name}
+                    className="w-8 h-8 rounded-full border-2 border-blue-100"
+                  />
+                  <span className="text-gray-700 font-medium hidden lg:block">
+                    Hi, {user.name.split(' ')[0]} 👋
+                  </span>
+                </div>
+                <button 
+                  onClick={handleAuthAction}
+                  className="flex items-center gap-2 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden sm:block">Logout</span>
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={handleAuthAction}
+                className="ml-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
-                {link.name}
-              </a>
-            ))}
-            <button className="ml-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-              Sign In
-            </button>
+                Sign In
+              </button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -62,10 +106,40 @@ const Navbar = () => {
                 {link.name}
               </a>
             ))}
+            
+            {/* Mobile Auth Section */}
             <div className="px-4 py-2">
-              <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                Sign In
-              </button>
+              {loading ? (
+                <div className="w-full h-10 bg-gray-200 rounded-lg animate-pulse"></div>
+              ) : user ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-2">
+                    <img 
+                      src={user.photoURL} 
+                      alt={user.name}
+                      className="w-10 h-10 rounded-full border-2 border-blue-100"
+                    />
+                    <div>
+                      <p className="font-medium text-gray-900">Hi, {user.name.split(' ')[0]} 👋</p>
+                      <p className="text-sm text-gray-500">{user.email}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={handleAuthAction}
+                    className="w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <button 
+                  onClick={handleAuthAction}
+                  className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Sign In
+                </button>
+              )}
             </div>
           </div>
         )}
