@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import { useToast } from './ToastContainer';
 import { useAuth } from '../contexts/AuthContext';
 import EventRegistrationModal from './EventRegistrationModal';
@@ -28,7 +27,6 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
   const [currentRegistered, setCurrentRegistered] = useState(event.registered);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
   const { showToast } = useToast();
   const { user, signInWithGoogle } = useAuth();
 
@@ -36,63 +34,16 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
   const isNearlyFull = registrationPercentage > 80;
   const isFull = registrationPercentage >= 100;
 
-  // Countdown timer logic
-  const getCountdown = () => {
-    if (!event.date || !event.time) return "";
-
-    // Extract only the start time from the range
-    const startTime = event.time.split("-")[0].trim(); // "2:00 PM"
-
-    // Combine and parse
-    const eventDateTimeStr = `${event.date} ${startTime}`; // "July 15, 2025 2:00 PM"
-    const eventDateTime = new Date(eventDateTimeStr);
-    const now = new Date();
-
-    const timeDiff = eventDateTime.getTime() - now.getTime();
-
-    if (isNaN(timeDiff)) {
-      return "Invalid event date/time";
-    }
-
-    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-
-    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
-  };
-
-  const countdown = getCountdown();
-
-  // Update timer every second
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
   const getProgressBarColor = () => {
     if (isFull) return 'bg-red-500';
-    if (isNearlyFull) return 'bg-orange-500';
-    return 'bg-gradient-to-r from-blue-500 to-blue-600';
-  };
-
-  const getCategoryColor = () => {
-    switch (event.category) {
-      case 'Workshop': return 'bg-blue-100 text-blue-800';
-      case 'Hackathon': return 'bg-purple-100 text-purple-800';
-      case 'Seminar': return 'bg-emerald-100 text-emerald-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+    if (isNearlyFull) return 'bg-amber-500';
+    return 'bg-emerald-500';
   };
 
   const handleRegistration = () => {
     if (isFull) return;
     
     if (!user) {
-      // Trigger sign-in first
       signInWithGoogle().catch(() => {
         showToast('Please sign in to register for events', 'error');
       });
@@ -124,95 +75,64 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
 
     checkRegistration();
   }, [user, event.id]);
-  
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group hover:scale-105">
-        {/* Header Section */}
-        <div className="p-6 pb-4">
-          <div
-            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium mb-3 ${getCategoryColor()}`}
-          >
-            {event.club}
-          </div>
+      <div className="bg-card border border-border rounded-xl p-8 hover:border-primary transition-colors duration-200 group">
+        {/* Club Badge */}
+        <div className="bg-muted text-muted-foreground px-3 py-1.5 rounded-md text-xs font-medium mb-4 inline-block">
+          {event.club}
+        </div>
 
-          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors leading-tight">
-            {event.title}
-          </h3>
+        {/* Event Title */}
+        <h3 className="text-2xl font-semibold text-foreground mb-2 leading-[1.3] group-hover:text-primary transition-colors">
+          {event.title}
+        </h3>
 
-          <div className="flex items-center text-sm text-gray-500 mb-1">
-            <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-            <span>
-              {event.date} • {event.time}
-            </span>
-          </div>
+        {/* Date & Time */}
+        <div className="text-base font-medium text-muted-foreground mb-1">
+          {event.date} • {event.time}
+        </div>
 
-          <div className="flex items-center text-sm text-gray-500 mb-3">
-            <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-            <span>{event.location}</span>
-          </div>
-
-          {/* Countdown Timer */}
-          <div className="flex items-center text-sm mb-3">
-            <Clock className="w-4 h-4 mr-2 text-orange-500" />
-            <span className={`font-medium ${countdown === 'Event has started' ? 'text-green-600' : 'text-orange-600'}`}>
-              {countdown === 'Event has started' ? 'Live Now!' : `Starts in: ${countdown}`}
-            </span>
-          </div>
+        {/* Location */}
+        <div className="text-base font-normal text-tertiary mb-6">
+          {event.location}
         </div>
 
         {/* Description */}
-        <div className="px-6 pb-4">
-          <p className="text-gray-600 text-sm leading-relaxed">
-            {event.description}
-          </p>
+        <p className="text-base font-normal text-muted-foreground leading-[1.5] mb-8 line-clamp-3">
+          {event.description}
+        </p>
+
+        {/* Registration Status */}
+        <div className="text-sm font-medium text-muted-foreground mb-4">
+          {currentRegistered} / {event.capacity} registered
         </div>
 
-        {/* Registration Progress */}
-        <div className="px-6 pb-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center text-sm text-gray-500">
-              <Users className="w-4 h-4 mr-1" />
-              <span>
-                {currentRegistered} / {event.capacity} registered
-              </span>
-            </div>
-            <span
-              className={`text-xs font-medium ${
-                isNearlyFull ? "text-orange-600" : "text-blue-600"
-              }`}
-            >
-              {Math.round(registrationPercentage)}%
-            </span>
-          </div>
-
-          <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-            <div
-              className={`h-2 rounded-full transition-all duration-300 ${getProgressBarColor()}`}
-              style={{ width: `${Math.min(registrationPercentage, 100)}%` }}
-            ></div>
-          </div>
+        {/* Progress Bar */}
+        <div className="w-full bg-muted rounded-sm h-1 mb-8">
+          <div
+            className={`h-1 rounded-sm transition-all duration-300 ${getProgressBarColor()}`}
+            style={{ width: `${Math.min(registrationPercentage, 100)}%` }}
+          ></div>
         </div>
 
-        {/* Footer */}
-        <div className="px-6 pb-6">
-          <button
-            onClick={handleRegistration}
-            disabled={isFull || alreadyRegistered}
-            className={`w-full py-3 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg ${
-              isFull || alreadyRegistered
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 hover:scale-105"
-            }`}
-          >
-            {isFull
-              ? "Registration Full"
-              : alreadyRegistered
-              ? "Already Registered"
-              : "Register Now"}
-          </button>
-        </div>
+        {/* Register Button */}
+        <button
+          onClick={handleRegistration}
+          disabled={isFull || alreadyRegistered}
+          className={`w-full h-11 rounded-lg font-medium text-base transition-opacity duration-200 hover-lift ${
+            isFull || alreadyRegistered
+              ? "bg-muted text-muted-foreground cursor-not-allowed"
+              : "bg-primary text-primary-foreground hover:opacity-95"
+          }`}
+        >
+          {isFull
+            ? "Full"
+            : alreadyRegistered
+            ? "Registered"
+            : "Register"}
+        </button>
       </div>
 
       <EventRegistrationModal

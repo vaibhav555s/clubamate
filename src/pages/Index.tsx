@@ -12,7 +12,7 @@ import { ToastProvider } from '../components/ToastContainer';
 const Index = () => {
   return (
     <ToastProvider>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-background">
         <Navbar />
         <Hero />
         <FeaturedEvents />
