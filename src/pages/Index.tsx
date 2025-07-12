@@ -3,8 +3,8 @@ import React from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import FeaturedEvents from '../components/FeaturedEvents';
+import AIAdvisorSection from '../components/AIAdvisorSection';
 import ClubsSection from '../components/ClubsSection';
-import ChatAssistant from '../components/ChatAssistant';
 import FeedbackSection from '../components/FeedbackSection';
 import Footer from '../components/Footer';
 import { ToastProvider } from '../components/ToastContainer';
@@ -16,10 +16,10 @@ const Index = () => {
         <Navbar />
         <Hero />
         <FeaturedEvents />
+        <AIAdvisorSection />
         <ClubsSection />
         <FeedbackSection />
         <Footer />
-        <ChatAssistant />
       </div>
     </ToastProvider>
   );
