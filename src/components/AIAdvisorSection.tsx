@@ -1,20 +1,22 @@
-
-import React, { useState } from 'react';
-import { Sparkles, X, ArrowRight } from 'lucide-react';
-import { Dialog, DialogContent } from './ui/dialog';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
+import React, { useState } from "react";
+import { Sparkles, X, ArrowRight } from "lucide-react";
+import { Dialog, DialogContent } from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { sendMessageToGemini } from "../../utils/gemini";
 
 const AIAdvisorSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [messages, setMessages] = useState<Array<{ text: string; isUser: boolean; timestamp: Date }>>([]);
-  const [inputValue, setInputValue] = useState('');
+  const [messages, setMessages] = useState<
+    Array<{ text: string; isUser: boolean; timestamp: Date }>
+  >([]);
+  const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 
   const suggestions = [
     "What events match my interests?",
     "Which clubs should I join?",
-    "Show me this week's events"
+    "Show me this week's events",
   ];
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -25,25 +27,42 @@ const AIAdvisorSection = () => {
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
-    const userMessage = { text: inputValue, isUser: true, timestamp: new Date() };
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
+    const userMessage = {
+      text: inputValue,
+      isUser: true,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue("");
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const aiReply = await sendMessageToGemini(userMessage.text);
+
       const aiResponse = {
-        text: "I'd be happy to help you find the perfect events and clubs! Based on your interests, I can recommend several options that match your preferences. Let me analyze our current offerings...",
+        text: aiReply,
         isUser: false,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
-      setMessages(prev => [...prev, aiResponse]);
-      setIsTyping(false);
-    }, 2000);
+
+      setMessages((prev) => [...prev, aiResponse]);
+    } catch (error) {
+      console.error("Gemini error:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          text: "Oops! Failed to get response from Gemini.",
+          isUser: false,
+          timestamp: new Date(),
+        },
+      ]);
+    }
+
+    setIsTyping(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -55,7 +74,10 @@ const AIAdvisorSection = () => {
         <div className="max-w-4xl mx-auto px-8 text-center">
           {/* Icon */}
           <div className="mb-8">
-            <Sparkles className="w-8 h-8 mx-auto text-primary-foreground" strokeWidth={1.5} />
+            <Sparkles
+              className="w-8 h-8 mx-auto text-primary-foreground"
+              strokeWidth={1.5}
+            />
           </div>
 
           {/* Headline */}
@@ -98,8 +120,13 @@ const AIAdvisorSection = () => {
             {/* Header */}
             <div className="flex items-center justify-between p-8 border-b border-border">
               <div className="flex items-center gap-4">
-                <Sparkles className="w-6 h-6 text-foreground" strokeWidth={1.5} />
-                <h1 className="text-xl font-semibold text-foreground">Ask anything</h1>
+                <Sparkles
+                  className="w-6 h-6 text-foreground"
+                  strokeWidth={1.5}
+                />
+                <h1 className="text-xl font-semibold text-foreground">
+                  Ask anything
+                </h1>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -114,33 +141,44 @@ const AIAdvisorSection = () => {
               <div className="max-w-3xl mx-auto space-y-6">
                 {messages.length === 0 && (
                   <div className="text-center py-12">
-                    <Sparkles className="w-12 h-12 mx-auto text-muted-foreground mb-4" strokeWidth={1.5} />
-                    <p className="text-muted-foreground text-lg">How can I help you today?</p>
+                    <Sparkles
+                      className="w-12 h-12 mx-auto text-muted-foreground mb-4"
+                      strokeWidth={1.5}
+                    />
+                    <p className="text-muted-foreground text-lg">
+                      How can I help you today?
+                    </p>
                   </div>
                 )}
-                
+
                 {messages.map((message, index) => (
                   <div
                     key={index}
-                    className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${
+                      message.isUser ? "justify-end" : "justify-start"
+                    }`}
                   >
                     <div
                       className={`max-w-[70%] px-4 py-3 rounded-2xl ${
                         message.isUser
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-foreground border border-border'
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-foreground border border-border"
                       }`}
                     >
-                      <p className="text-[15px] leading-relaxed">{message.text}</p>
+                      <p className="text-[15px] leading-relaxed">
+                        {message.text}
+                      </p>
                     </div>
                   </div>
                 ))}
-                
+
                 {/* Typing Indicator */}
                 {isTyping && (
                   <div className="flex justify-start">
                     <div className="bg-muted border border-border px-4 py-3 rounded-2xl">
-                      <p className="text-[15px] text-muted-foreground">Thinking...</p>
+                      <p className="text-[15px] text-muted-foreground">
+                        Thinking...
+                      </p>
                     </div>
                   </div>
                 )}
