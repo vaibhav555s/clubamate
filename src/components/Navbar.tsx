@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
-import { Menu, X, LogOut } from 'lucide-react';
+import { Menu, X, LogOut, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,9 +32,9 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+          <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
             ClubMate
-          </div>
+          </Link>
 
           <div className="hidden md:flex items-center space-x-4">
             {/* Desktop Navigation */}
@@ -64,6 +66,13 @@ const Navbar = () => {
                     Hi, {user.name.split(' ')[0]} 👋
                   </span>
                 </div>
+                <Link 
+                  to="/my-registrations"
+                  className="flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-200 transition-colors font-medium"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="hidden sm:block">My Events</span>
+                </Link>
                 <button 
                   onClick={handleAuthAction}
                   className="flex items-center gap-2 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
@@ -124,6 +133,14 @@ const Navbar = () => {
                       <p className="text-sm text-gray-500">{user.email}</p>
                     </div>
                   </div>
+                  <Link 
+                    to="/my-registrations"
+                    className="w-full flex items-center justify-center gap-2 bg-blue-100 text-blue-700 py-2 rounded-lg hover:bg-blue-200 transition-colors font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <User className="w-4 h-4" />
+                    My Events
+                  </Link>
                   <button 
                     onClick={handleAuthAction}
                     className="w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"

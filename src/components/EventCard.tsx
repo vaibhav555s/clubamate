@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { Calendar, MapPin, Users } from "lucide-react";
-import { useToast } from "./ToastContainer";
-import { useAuth } from "../contexts/AuthContext";
-import EventRegistrationModal from "./EventRegistrationModal";
+
+import React, { useState, useEffect } from 'react';
+import { Calendar, MapPin, Users, Clock } from 'lucide-react';
+import { useToast } from './ToastContainer';
+import { useAuth } from '../contexts/AuthContext';
+import EventRegistrationModal from './EventRegistrationModal';
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../../firebaseConfig";
+import { db } from "../../firebaseConfig"; 
 
 interface Event {
   id: string;
@@ -27,6 +28,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
   const [currentRegistered, setCurrentRegistered] = useState(event.registered);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const { showToast } = useToast();
   const { user, signInWithGoogle } = useAuth();
 
@@ -34,41 +36,74 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
   const isNearlyFull = registrationPercentage > 80;
   const isFull = registrationPercentage >= 100;
 
+  // Countdown timer logic
+  const getCountdown = () => {
+    if (!event.date || !event.time) return "";
+
+    // Extract only the start time from the range
+    const startTime = event.time.split("-")[0].trim(); // "2:00 PM"
+
+    // Combine and parse
+    const eventDateTimeStr = `${event.date} ${startTime}`; // "July 15, 2025 2:00 PM"
+    const eventDateTime = new Date(eventDateTimeStr);
+    const now = new Date();
+
+    const timeDiff = eventDateTime.getTime() - now.getTime();
+
+    if (isNaN(timeDiff)) {
+      return "Invalid event date/time";
+    }
+
+    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  };
+
+  const countdown = getCountdown();
+
+  // Update timer every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   const getProgressBarColor = () => {
-    if (isFull) return "bg-red-500";
-    if (isNearlyFull) return "bg-orange-500";
-    return "bg-gradient-to-r from-blue-500 to-blue-600";
+    if (isFull) return 'bg-red-500';
+    if (isNearlyFull) return 'bg-orange-500';
+    return 'bg-gradient-to-r from-blue-500 to-blue-600';
   };
 
   const getCategoryColor = () => {
     switch (event.category) {
-      case "Workshop":
-        return "bg-blue-100 text-blue-800";
-      case "Hackathon":
-        return "bg-purple-100 text-purple-800";
-      case "Seminar":
-        return "bg-emerald-100 text-emerald-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+      case 'Workshop': return 'bg-blue-100 text-blue-800';
+      case 'Hackathon': return 'bg-purple-100 text-purple-800';
+      case 'Seminar': return 'bg-emerald-100 text-emerald-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const handleRegistration = () => {
     if (isFull) return;
-
+    
     if (!user) {
       // Trigger sign-in first
       signInWithGoogle().catch(() => {
-        showToast("Please sign in to register for events", "error");
+        showToast('Please sign in to register for events', 'error');
       });
       return;
     }
-
+    
     setShowRegistrationModal(true);
   };
 
   const handleRegistrationSuccess = () => {
-    setCurrentRegistered((prev) => prev + 1);
+    setCurrentRegistered(prev => prev + 1);
   };
 
   useEffect(() => {
@@ -89,6 +124,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
 
     checkRegistration();
   }, [user, event.id]);
+  
 
   return (
     <>
@@ -115,6 +151,14 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
           <div className="flex items-center text-sm text-gray-500 mb-3">
             <MapPin className="w-4 h-4 mr-2 text-gray-400" />
             <span>{event.location}</span>
+          </div>
+
+          {/* Countdown Timer */}
+          <div className="flex items-center text-sm mb-3">
+            <Clock className="w-4 h-4 mr-2 text-orange-500" />
+            <span className={`font-medium ${countdown === 'Event has started' ? 'text-green-600' : 'text-orange-600'}`}>
+              {countdown === 'Event has started' ? 'Live Now!' : `Starts in: ${countdown}`}
+            </span>
           </div>
         </div>
 
