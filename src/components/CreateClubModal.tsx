@@ -1,6 +1,8 @@
-
-import React, { useState } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import React, { useState } from "react";
+import { X, Loader2 } from "lucide-react";
+import { useToast } from "./ToastContainer";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../../firebaseConfig";
 
 interface CreateClubModalProps {
   isOpen: boolean;
@@ -21,16 +23,17 @@ interface ClubFormData {
 const CreateClubModal: React.FC<CreateClubModalProps> = ({
   isOpen,
   onClose,
-  onClubCreated
+  onClubCreated,
 }) => {
+  const { showToast } = useToast();
   const [formData, setFormData] = useState<ClubFormData>({
-    name: '',
-    description: '',
-    logo: '🎯',
-    category: 'tech',
+    name: "",
+    description: "",
+    logo: "🎯",
+    category: "tech",
     memberCount: 0,
     establishedYear: new Date().getFullYear(),
-    contactEmail: ''
+    contactEmail: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -40,24 +43,39 @@ const CreateClubModal: React.FC<CreateClubModalProps> = ({
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const clubData = {
+        name: formData.name,
+        description: formData.description,
+        category: formData.category,
+        logo: formData.logo,
+        memberCount: formData.memberCount,
+        establishedYear: formData.establishedYear,
+        contactEmail: formData.contactEmail,
+        createdAt: serverTimestamp(),
+      };
 
-    console.log('Creating club:', formData);
-    setIsLoading(false);
-    onClubCreated();
-    onClose();
-    
-    // Reset form
-    setFormData({
-      name: '',
-      description: '',
-      logo: '🎯',
-      category: 'tech',
-      memberCount: 0,
-      establishedYear: new Date().getFullYear(),
-      contactEmail: ''
-    });
+      await addDoc(collection(db, "clubs"), clubData);
+
+      showToast("🎉 Club created successfully!", "success");
+      onClubCreated();
+      onClose();
+
+      setFormData({
+        name: "",
+        description: "",
+        logo: "🎯",
+        category: "tech",
+        memberCount: 0,
+        establishedYear: new Date().getFullYear(),
+        contactEmail: "",
+      });
+    } catch (error) {
+      console.error("Error creating club:", error);
+      showToast("❌ Failed to create club", "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -67,7 +85,7 @@ const CreateClubModal: React.FC<CreateClubModalProps> = ({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={handleOverlayClick}
     >
@@ -101,7 +119,9 @@ const CreateClubModal: React.FC<CreateClubModalProps> = ({
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({...prev, name: e.target.value}))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
                 className="w-full h-12 bg-gray-50 border border-gray-200 rounded-lg px-4 focus:border-black focus:bg-white focus:outline-none transition-all duration-200"
                 required
                 placeholder="Enter club name"
@@ -116,7 +136,9 @@ const CreateClubModal: React.FC<CreateClubModalProps> = ({
               <input
                 type="text"
                 value={formData.logo}
-                onChange={(e) => setFormData(prev => ({...prev, logo: e.target.value}))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, logo: e.target.value }))
+                }
                 className="w-full h-12 bg-gray-50 border border-gray-200 rounded-lg px-4 focus:border-black focus:bg-white focus:outline-none transition-all duration-200"
                 required
                 placeholder="🎯 or image URL"
@@ -130,7 +152,9 @@ const CreateClubModal: React.FC<CreateClubModalProps> = ({
               </label>
               <select
                 value={formData.category}
-                onChange={(e) => setFormData(prev => ({...prev, category: e.target.value}))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, category: e.target.value }))
+                }
                 className="w-full h-12 bg-gray-50 border border-gray-200 rounded-lg px-4 focus:border-black focus:bg-white focus:outline-none transition-all duration-200"
                 required
               >
@@ -150,7 +174,12 @@ const CreateClubModal: React.FC<CreateClubModalProps> = ({
               <input
                 type="number"
                 value={formData.memberCount}
-                onChange={(e) => setFormData(prev => ({...prev, memberCount: parseInt(e.target.value)}))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    memberCount: parseInt(e.target.value),
+                  }))
+                }
                 className="w-full h-12 bg-gray-50 border border-gray-200 rounded-lg px-4 focus:border-black focus:bg-white focus:outline-none transition-all duration-200"
                 required
                 min="0"
@@ -165,7 +194,12 @@ const CreateClubModal: React.FC<CreateClubModalProps> = ({
               <input
                 type="number"
                 value={formData.establishedYear}
-                onChange={(e) => setFormData(prev => ({...prev, establishedYear: parseInt(e.target.value)}))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    establishedYear: parseInt(e.target.value),
+                  }))
+                }
                 className="w-full h-12 bg-gray-50 border border-gray-200 rounded-lg px-4 focus:border-black focus:bg-white focus:outline-none transition-all duration-200"
                 required
                 min="1900"
@@ -181,7 +215,12 @@ const CreateClubModal: React.FC<CreateClubModalProps> = ({
               <input
                 type="email"
                 value={formData.contactEmail}
-                onChange={(e) => setFormData(prev => ({...prev, contactEmail: e.target.value}))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    contactEmail: e.target.value,
+                  }))
+                }
                 className="w-full h-12 bg-gray-50 border border-gray-200 rounded-lg px-4 focus:border-black focus:bg-white focus:outline-none transition-all duration-200"
                 required
                 placeholder="club@university.edu"
@@ -195,7 +234,12 @@ const CreateClubModal: React.FC<CreateClubModalProps> = ({
               </label>
               <textarea
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({...prev, description: e.target.value}))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
                 className="w-full h-24 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:border-black focus:bg-white focus:outline-none transition-all duration-200 resize-none"
                 required
                 placeholder="Enter club description"
@@ -223,7 +267,7 @@ const CreateClubModal: React.FC<CreateClubModalProps> = ({
                   Creating...
                 </>
               ) : (
-                'Create Club'
+                "Create Club"
               )}
             </button>
           </div>
