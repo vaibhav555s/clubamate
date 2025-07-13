@@ -56,7 +56,6 @@ const EventRegistrationModal: React.FC<EventRegistrationModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      // Create registration document with meaningful ID
       const registrationData = {
         eventId: event.id,
         eventName: event.title,
@@ -69,7 +68,7 @@ const EventRegistrationModal: React.FC<EventRegistrationModalProps> = ({
         userPhone: formData.phone,
         userBranch: formData.branch,
         userYear: formData.year,
-        registeredAt: new Date().toISOString(),
+        registeredAt: new Date(),
         status: 'confirmed'
       };
 
