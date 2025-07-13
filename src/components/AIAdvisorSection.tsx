@@ -74,10 +74,7 @@ const AIAdvisorSection = () => {
         <div className="max-w-4xl mx-auto px-8 text-center">
           {/* Icon */}
           <div className="mb-8">
-            <Sparkles
-              className="w-8 h-8 mx-auto text-primary-foreground"
-              strokeWidth={1.5}
-            />
+            <img src="/gemini-color.png" alt="" className="h-14 inline mb-3" />
           </div>
 
           {/* Headline */}
@@ -86,8 +83,13 @@ const AIAdvisorSection = () => {
           </h2>
 
           {/* Subtext */}
-          <p className="text-lg font-normal text-gray-400 mb-12">
-            Powered by Gemini AI
+          <p className="text-3xl font-normal text-gray-400 mb-12 mt-12">
+            Powered by{" "}
+            <img
+              src="/gemini-logo.png"
+              alt="Gemini Logo"
+              className="h-9 inline mb-2"
+            />{" "}
           </p>
 
           {/* Suggestion Cards */}
