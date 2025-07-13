@@ -12,16 +12,13 @@ const Navbar = () => {
   const { user, logout, loading } = useAuth();
   const { isAdmin, adminUser, logoutAdmin } = useAdmin();
 
-  const navLinks = isAdmin ? [
-    { name: 'Dashboard', href: '#dashboard' },
-    { name: 'Events', href: '#events' },
-    { name: 'Clubs', href: '#clubs' },
-    { name: 'Analytics', href: '#analytics' }
-  ] : [
-    { name: 'Events', href: '#events' },
-    { name: 'Clubs', href: '#clubs' },
-    { name: 'About', href: '#contact' }
-  ];
+  const navLinks = !isAdmin
+    ? [
+        { name: "Events", href: "#events" },
+        { name: "Clubs", href: "#clubs" },
+        { name: "About", href: "#contact" },
+      ]
+    : [];
 
   const handleAuthAction = async () => {
     try {
