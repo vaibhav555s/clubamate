@@ -74,7 +74,7 @@ const AIAdvisorSection = () => {
         <div className="max-w-4xl mx-auto px-8 text-center">
           {/* Icon */}
           <div className="mb-8">
-            <img src="/gemini-color.png" alt="" className="h-14 inline mb-3" />
+            <img src="/gemini-color.png" alt="" className="h-14 inline mb-3"/>
           </div>
 
           {/* Headline */}
