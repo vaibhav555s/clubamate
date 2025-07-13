@@ -1,24 +1,23 @@
-
-import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import React, { useState } from "react";
+import { Search } from "lucide-react";
 
 const Hero = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Searching for:', searchQuery);
-    // Add functionality to scroll to events section or filter events
-    const eventsSection = document.getElementById('events');
+    console.log("Searching for:", searchQuery);
+
+    const eventsSection = document.getElementById("events");
     if (eventsSection) {
-      eventsSection.scrollIntoView({ behavior: 'smooth' });
+      eventsSection.scrollIntoView({ behavior: "smooth" });
     }
   };
 
   const handleExploreEvents = () => {
-    const eventsSection = document.getElementById('events');
+    const eventsSection = document.getElementById("events");
     if (eventsSection) {
-      eventsSection.scrollIntoView({ behavior: 'smooth' });
+      eventsSection.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -26,7 +25,7 @@ const Hero = () => {
     <section className="min-h-screen bg-gradient-to-b from-background to-muted flex items-center justify-center">
       <div className="max-w-4xl mx-auto px-8 text-center">
         {/* Main Headline */}
-        <h1 className="text-[72px] md:text-[72px] sm:text-[48px] font-semibold text-foreground leading-[1.1] mb-6">
+        <h1 className="text-[72px] md:text-[72px] sm:text-[48px] font-semibold text-foreground leading-[1.1] mb-6 mt-12 md:mt-0">
           Discover campus events
           <br />
           that matter
@@ -38,7 +37,10 @@ const Hero = () => {
         </p>
 
         {/* Search Bar */}
-        <form onSubmit={handleSearch} className="relative max-w-[500px] mx-auto mb-8">
+        <form
+          onSubmit={handleSearch}
+          className="relative max-w-[500px] mx-auto mb-8"
+        >
           <input
             type="text"
             placeholder="Search events, clubs, or topics..."
@@ -55,7 +57,7 @@ const Hero = () => {
         </form>
 
         {/* CTA Button */}
-        <button 
+        <button
           onClick={handleExploreEvents}
           className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-medium text-base hover:opacity-95 transition-opacity hover-lift"
         >

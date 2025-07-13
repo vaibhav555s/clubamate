@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
@@ -30,7 +29,7 @@ const FeaturedEvents = () => {
       <div className="max-w-7xl mx-auto px-8">
         {/* Section Header */}
         <div className="mb-16">
-          <h2 className="text-5xl font-semibold text-foreground text-left">
+          <h2 className="text-5xl font-semibold text-foreground md:text-left text-center">
             Featured Events
           </h2>
         </div>

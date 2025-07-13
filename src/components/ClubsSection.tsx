@@ -28,7 +28,7 @@ const ClubsSection = () => {
       <div className="max-w-7xl mx-auto px-8">
         {/* Section Header */}
         <div className="mb-16">
-          <h2 className="text-5xl font-semibold text-foreground text-left">
+          <h2 className="text-5xl font-semibold text-foreground lg:text-left text-center">
             Club Openings
           </h2>
         </div>
