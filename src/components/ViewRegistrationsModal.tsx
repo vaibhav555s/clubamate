@@ -1,6 +1,7 @@
-
-import React, { useState } from 'react';
-import { X, FileText } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { X, FileText } from "lucide-react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../../firebaseConfig";
 
 interface ViewRegistrationsModalProps {
   isOpen: boolean;
@@ -15,50 +16,48 @@ interface Registration {
   branch: string;
   year: string;
   registrationDate: string;
+  eventName: string;
 }
 
 const ViewRegistrationsModal: React.FC<ViewRegistrationsModalProps> = ({
   isOpen,
-  onClose
+  onClose,
 }) => {
-  const [selectedEvent, setSelectedEvent] = useState('react-workshop');
-  
-  // Mock data - in real app, this would come from Firebase
-  const events = [
-    { id: 'react-workshop', name: 'React Workshop' },
-    { id: 'ai-seminar', name: 'AI & ML Seminar' },
-    { id: 'coding-contest', name: 'Coding Contest' }
-  ];
+  const [selectedEvent, setSelectedEvent] = useState("react-workshop");
 
-  const registrations: Registration[] = [
-    {
-      id: '1',
-      studentName: 'John Doe',
-      email: 'john.doe@university.edu',
-      phone: '+1-234-567-8900',
-      branch: 'Computer Science',
-      year: '3rd Year',
-      registrationDate: '2024-12-10'
-    },
-    {
-      id: '2',
-      studentName: 'Jane Smith',
-      email: 'jane.smith@university.edu',
-      phone: '+1-234-567-8901',
-      branch: 'Information Technology',
-      year: '2nd Year',
-      registrationDate: '2024-12-11'
-    },
-    {
-      id: '3',
-      studentName: 'Mike Johnson',
-      email: 'mike.johnson@university.edu',
-      phone: '+1-234-567-8902',
-      branch: 'Electronics',
-      year: '4th Year',
-      registrationDate: '2024-12-12'
-    }
-  ];
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRegistrations = async () => {
+      setLoading(true);
+      try {
+        const snapshot = await getDocs(collection(db, "registrations"));
+        const fetched = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          console.log("Fetched registration data:", data);
+          return {
+            id: doc.id,
+            studentName: data.userName || "",
+            email: data.userEmail || "",
+            phone: data.userPhone || "",
+            branch: data.userBranch || "",
+            year: data.userYear ? `${data.userYear}` : "",
+            registrationDate: new Date(data.registeredAt).toLocaleDateString(),
+            eventName: data.eventName || "",
+          };
+        });
+        console.log("Fetched Registrations →", fetched);
+        setRegistrations(fetched);
+      } catch (error) {
+        console.error("Error fetching registrations:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isOpen) fetchRegistrations();
+  }, [selectedEvent, isOpen]);
 
   if (!isOpen) return null;
 
@@ -69,7 +68,7 @@ const ViewRegistrationsModal: React.FC<ViewRegistrationsModalProps> = ({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={handleOverlayClick}
     >
@@ -90,24 +89,6 @@ const ViewRegistrationsModal: React.FC<ViewRegistrationsModalProps> = ({
           <p className="text-base text-muted-foreground">
             View and manage student registrations
           </p>
-        </div>
-
-        {/* Event Filter */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-500 mb-2">
-            Select Event
-          </label>
-          <select
-            value={selectedEvent}
-            onChange={(e) => setSelectedEvent(e.target.value)}
-            className="w-full max-w-md h-12 bg-gray-50 border border-gray-200 rounded-lg px-4 focus:border-black focus:bg-white focus:outline-none transition-all duration-200"
-          >
-            {events.map(event => (
-              <option key={event.id} value={event.id}>
-                {event.name}
-              </option>
-            ))}
-          </select>
         </div>
 
         {/* Registrations Table */}
@@ -135,13 +116,18 @@ const ViewRegistrationsModal: React.FC<ViewRegistrationsModalProps> = ({
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
                       Registration Date
                     </th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
+                      Event Name
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {registrations.map((registration, index) => (
-                    <tr 
+                    <tr
                       key={registration.id}
-                      className={`${index % 2 === 1 ? 'bg-gray-50' : ''} border-b border-gray-200 last:border-b-0`}
+                      className={`${
+                        index % 2 === 1 ? "bg-gray-50" : ""
+                      } border-b border-gray-200 last:border-b-0`}
                     >
                       <td className="py-3 px-4 text-sm text-foreground font-medium">
                         {registration.studentName}
@@ -159,7 +145,12 @@ const ViewRegistrationsModal: React.FC<ViewRegistrationsModalProps> = ({
                         {registration.year}
                       </td>
                       <td className="py-3 px-4 text-sm text-muted-foreground">
-                        {new Date(registration.registrationDate).toLocaleDateString()}
+                        {new Date(
+                          registration.registrationDate
+                        ).toLocaleDateString()}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-muted-foreground">
+                        {registration.eventName}
                       </td>
                     </tr>
                   ))}
@@ -183,7 +174,10 @@ const ViewRegistrationsModal: React.FC<ViewRegistrationsModalProps> = ({
         {registrations.length > 0 && (
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <p className="text-sm text-muted-foreground">
-              Total registrations: <span className="font-medium text-foreground">{registrations.length}</span>
+              Total registrations:{" "}
+              <span className="font-medium text-foreground">
+                {registrations.length}
+              </span>
             </p>
           </div>
         )}
