@@ -139,7 +139,7 @@ const AIAdvisorSection = () => {
             </div>
 
             {/* Chat Messages Area */}
-            <div className="flex-1 overflow-y-auto p-8">
+            <div className="flex-1 overflow-y-auto p-8" style={{ maxHeight: 'calc(100vh - 200px)' }}>
               <div className="max-w-3xl mx-auto space-y-6">
                 {messages.length === 0 && (
                   <div className="text-center py-12">
